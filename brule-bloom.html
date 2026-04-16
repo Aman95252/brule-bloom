@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Brûlé & Bloom — Artisan Café</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #f5f0e8;
+      --espresso: #1e110a;
+      --caramel: #c8843a;
+      --gold: #d4a85a;
+      --gold-light: #e8c47a;
+      --foam: #fdf8f0;
+      --bark: #5c3317;
+      --mist: #e8e0d4;
+      --accent: #a0522d;
+      --dark: #120b05;
+      --card-dark: #1a0f07;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--espresso);
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ─── CUSTOM CURSOR ─── */
+    .cursor-dot {
+      width: 8px; height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transition: transform 0.15s ease;
+    }
+    .cursor-ring {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(212,168,90,0.5);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9998;
+      transition: transform 0.08s ease, width 0.2s, height 0.2s, opacity 0.2s;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      background: rgba(18,11,5,0.96);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5rem;
+      height: 70px;
+      border-bottom: 1px solid rgba(212,168,90,0.15);
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold);
+      font-size: 1.45rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .nav-logo span { font-style: italic; color: var(--gold-light); }
+    .nav-links { display: flex; gap: 2.8rem; list-style: none; }
+    .nav-links a {
+      color: rgba(245,240,232,0.65);
+      text-decoration: none;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      transition: color 0.3s;
+      cursor: pointer;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--gold);
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ─── PAGES ─── */
+    .page { display: none; min-height: 100vh; }
+    .page.active { display: block; }
+
+    /* ─── TOAST NOTIFICATION ─── */
+    #toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--espresso);
+      border: 1px solid rgba(212,168,90,0.4);
+      color: var(--cream);
+      padding: 0.9rem 1.8rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      z-index: 9999;
+      transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s;
+      display: flex; align-items: center; gap: 0.7rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      border-radius: 2px;
+      opacity: 0;
+      white-space: nowrap;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    #toast .toast-icon { font-size: 1.1rem; }
+    #toast .toast-gold { color: var(--gold); font-weight: 600; }
+
+    /* ─── HERO ─── */
+    #hero {
+      height: 100vh;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg-img {
+      position: absolute; inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1600&q=80&auto=format&fit=crop');
+      background-size: cover; background-position: center;
+      filter: brightness(0.25) saturate(1.4);
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(18,11,5,0.92) 0%,
+        rgba(44,20,8,0.75) 40%,
+        rgba(18,11,5,0.88) 100%
+      );
+    }
+    .hero-grain {
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(200,132,58,0.12) 0%, transparent 65%);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; text-align: center; padding: 0 2rem; max-width: 800px; }
+    .hero-eyebrow {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--gold);
+      font-size: 0.7rem;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: fadeUp 1s ease both;
+      opacity: 0.85;
+    }
+    .hero-eyebrow span {
+      display: inline-block;
+      width: 30px; height: 1px;
+      background: var(--gold);
+      vertical-align: middle;
+      margin: 0 1rem; opacity: 0.6;
+    }
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.2rem, 8vw, 6.5rem);
+      color: var(--cream);
+      line-height: 1.06;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 1s ease 0.15s both;
+      font-weight: 400;
+    }
+    .hero-title em { color: var(--gold-light); font-style: italic; }
+    .hero-title .line2 { display: block; font-weight: 700; }
+    .hero-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      color: rgba(245,240,232,0.65);
+      margin-bottom: 3.5rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      animation: fadeUp 1s ease 0.3s both;
+    }
+    .hero-cta {
+      display: inline-flex; gap: 1rem;
+      animation: fadeUp 1s ease 0.45s both;
+    }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--espresso);
+      border: none;
+      padding: 1rem 2.4rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,0.15);
+      transform: translateX(-100%);
+      transition: transform 0.35s ease;
+    }
+    .btn-primary:hover::after { transform: translateX(0); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(212,168,90,0.3); }
+    .btn-primary:active { transform: translateY(-1px) scale(0.98); }
+    .btn-outline {
+      background: transparent;
+      color: rgba(245,240,232,0.75);
+      border: 1px solid rgba(245,240,232,0.25);
+      padding: 1rem 2.4rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .btn-outline:hover {
+      border-color: var(--gold); color: var(--gold);
+      transform: translateY(-3px);
+    }
+    .btn-outline:active { transform: translateY(-1px) scale(0.98); }
+    .hero-scroll {
+      position: absolute; bottom: 2.5rem; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
+      animation: pulse 2s infinite;
+    }
+    .hero-scroll-text {
+      color: rgba(212,168,90,0.5);
+      font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px; height: 44px;
+      background: linear-gradient(to bottom, rgba(212,168,90,0.6), transparent);
+    }
+
+    /* ─── FEATURES BAND ─── */
+    .features-band {
+      background: var(--dark);
+      border-top: 1px solid rgba(212,168,90,0.12);
+      border-bottom: 1px solid rgba(212,168,90,0.12);
+      padding: 1.6rem 5rem;
+      display: flex; justify-content: center; gap: 5rem;
+    }
+    .feature-item {
+      display: flex; align-items: center; gap: 0.9rem;
+      color: rgba(245,240,232,0.6); font-size: 0.78rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+    .feature-item span:first-child { font-size: 1.2rem; }
+
+    /* ─── ABOUT ─── */
+    .about-strip {
+      padding: 9rem 5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 7rem;
+      align-items: center;
+      background: var(--foam);
+      position: relative;
+    }
+    .about-strip::before {
+      content: '"';
+      position: absolute; top: 3rem; right: 5rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 20rem;
+      color: rgba(200,132,58,0.04);
+      line-height: 1;
+      pointer-events: none;
+    }
+    .about-label {
+      font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--caramel); margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .about-label::before {
+      content: ''; display: block; width: 24px; height: 1px; background: var(--caramel);
+    }
+    .about-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem; line-height: 1.12;
+      margin-bottom: 1.8rem; font-weight: 400;
+    }
+    .about-text h2 em { color: var(--caramel); font-style: italic; }
+    .about-text p {
+      color: #6a5a4a;
+      line-height: 1.9;
+      font-size: 0.92rem;
+      margin-bottom: 1.2rem;
+    }
+    .stats-row {
+      display: flex; gap: 2.5rem; margin-top: 3rem;
+      padding-top: 2.5rem;
+      border-top: 1px solid var(--mist);
+    }
+    .stat-item { }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; color: var(--caramel);
+      display: block; line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: #9a8a7a; margin-top: 0.4rem; display: block;
+    }
+    .about-visual { position: relative; }
+    .about-img-main {
+      width: 100%; aspect-ratio: 4/5;
+      object-fit: cover;
+      border-radius: 2px;
+      display: block;
+    }
+    .about-img-float {
+      position: absolute;
+      bottom: -2.5rem; left: -2.5rem;
+      width: 55%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border: 4px solid var(--foam);
+      border-radius: 2px;
+    }
+    .about-badge {
+      position: absolute;
+      top: 2rem; right: -1.5rem;
+      background: var(--gold);
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      color: var(--espresso);
+      font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .about-badge strong { font-size: 1.3rem; display: block; }
+
+    /* ─── HIGHLIGHT GALLERY ─── */
+    .gallery-strip {
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      height: 420px;
+      gap: 4px;
+    }
+    .gallery-item {
+      position: relative; overflow: hidden;
+    }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease, filter 0.6s ease;
+      filter: brightness(0.85) saturate(1.1);
+    }
+    .gallery-item:hover img { transform: scale(1.06); filter: brightness(0.7) saturate(1.3); }
+    .gallery-item-label {
+      position: absolute; bottom: 1.2rem; left: 1.2rem;
+      font-family: 'Cormorant Garamond', serif;
+      color: rgba(245,240,232,0.9); font-size: 0.9rem;
+      font-style: italic;
+      opacity: 0; transform: translateY(6px);
+      transition: all 0.3s ease;
+    }
+    .gallery-item:hover .gallery-item-label { opacity: 1; transform: translateY(0); }
+
+    /* ─── PAGE HEADER ─── */
+    .page-header {
+      background: var(--dark);
+      padding: 10rem 5rem 5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1400&q=70&auto=format');
+      background-size: cover; background-position: center;
+      opacity: 0.06;
+    }
+    .page-header-inner { position: relative; }
+    .page-header-tag {
+      font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1rem;
+      display: inline-flex; align-items: center; gap: 0.8rem;
+    }
+    .page-header-tag::before, .page-header-tag::after {
+      content: ''; display: block; width: 30px; height: 1px; background: var(--gold); opacity: 0.5;
+    }
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.8rem; color: var(--cream);
+      font-weight: 400;
+    }
+    .page-header p {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem; color: rgba(212,168,90,0.75);
+      margin-top: 0.8rem;
+      font-style: italic;
+    }
+
+    /* ─── MENU PAGE ─── */
+    .menu-section {
+      padding: 5rem 5rem;
+      background: #f9f4ec;
+    }
+    .menu-category-header {
+      display: flex; align-items: center; gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    .menu-category-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem; color: var(--bark);
+      font-weight: 400;
+    }
+    .menu-category-line {
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, var(--mist), transparent);
+    }
+    .menu-category-emoji { font-size: 1.4rem; }
+
+    /* ─── COFFEE CARDS ─── */
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 5rem;
+    }
+
+    .coffee-card {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      height: 400px;
+      background: var(--card-dark);
+      transition: transform 0.4s cubic-bezier(0.34,1.2,0.64,1), box-shadow 0.4s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .coffee-card:hover {
+      transform: translateY(-8px) scale(1.01);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+    .coffee-card:active {
+      transform: translateY(-4px) scale(0.99);
+    }
+
+    /* Card background image */
+    .card-img {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      transition: transform 0.6s ease, filter 0.6s ease;
+    }
+    .coffee-card:hover .card-img {
+      transform: scale(1.06);
+      filter: brightness(0.6) saturate(1.3);
+    }
+
+    /* Dark gradient overlay */
+    .card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(18,11,5,0.1) 0%,
+        rgba(18,11,5,0.3) 30%,
+        rgba(18,11,5,0.9) 75%,
+        rgba(18,11,5,0.98) 100%
+      );
+      transition: background 0.4s ease;
+    }
+    .coffee-card:hover .card-overlay {
+      background: linear-gradient(
+        to bottom,
+        rgba(18,11,5,0.2) 0%,
+        rgba(18,11,5,0.5) 35%,
+        rgba(18,11,5,0.95) 75%,
+        rgba(18,11,5,1) 100%
+      );
+    }
+
+    /* Emoji decoration top */
+    .card-emoji-decor {
+      position: absolute;
+      top: 1.5rem; right: 1.5rem;
+      width: 50px; height: 50px;
+      background: rgba(212,168,90,0.1);
+      border: 1px solid rgba(212,168,90,0.25);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      backdrop-filter: blur(8px);
+      z-index: 2;
+      transition: all 0.3s ease;
+    }
+    .coffee-card:hover .card-emoji-decor {
+      background: rgba(212,168,90,0.2);
+      transform: scale(1.1) rotate(10deg);
+    }
+
+    /* Card content */
+    .card-content {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 2rem;
+      z-index: 2;
+    }
+    .card-tag {
+      display: inline-block;
+      background: rgba(212,168,90,0.15);
+      border: 1px solid rgba(212,168,90,0.35);
+      color: var(--gold-light);
+      font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase;
+      padding: 0.25rem 0.7rem; border-radius: 20px;
+      margin-bottom: 0.7rem;
+      backdrop-filter: blur(4px);
+    }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      color: var(--cream); font-size: 1.35rem;
+      margin-bottom: 0.3rem; font-weight: 400;
+    }
+    .card-origin {
+      font-size: 0.7rem; color: rgba(212,168,90,0.6);
+      letter-spacing: 0.1em; margin-bottom: 0.8rem;
+    }
+    .card-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.92rem; font-style: italic;
+      color: rgba(245,240,232,0.6);
+      line-height: 1.55;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.4s ease;
+      opacity: 0;
+    }
+    .coffee-card:hover .card-quote {
+      max-height: 80px;
+      opacity: 1;
+    }
+    .card-desc {
+      font-size: 0.8rem; color: rgba(245,240,232,0.5);
+      line-height: 1.6;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.4s ease 0.05s, opacity 0.4s ease 0.05s;
+      opacity: 0;
+      margin-top: 0.5rem;
+    }
+    .coffee-card:hover .card-desc {
+      max-height: 80px;
+      opacity: 1;
+    }
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(212,168,90,0.15);
+    }
+    .card-price {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold); font-size: 1.3rem;
+    }
+    .card-add-btn {
+      background: var(--gold);
+      color: var(--espresso);
+      border: none;
+      padding: 0.55rem 1.2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+      border-radius: 2px;
+    }
+    .card-add-btn:hover {
+      background: var(--gold-light);
+      transform: scale(1.06);
+    }
+    .card-add-btn:active {
+      transform: scale(0.94);
+      background: var(--caramel);
+    }
+    .card-add-btn.added {
+      background: #2d7a4f;
+      color: white;
+      transform: scale(1.08);
+    }
+
+    /* ─── ORDER PAGE ─── */
+    .order-section {
+      padding: 5rem 5rem;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .order-grid {
+      display: grid; grid-template-columns: 1fr 1.35fr; gap: 3.5rem;
+    }
+    .order-form-wrap h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; margin-bottom: 0.5rem; font-weight: 400;
+    }
+    .order-form-wrap > p { color: #8a7a6a; margin-bottom: 2rem; font-size: 0.88rem; }
+    .form-group { margin-bottom: 1.3rem; }
+    .form-group label {
+      display: block; font-size: 0.7rem;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--bark); margin-bottom: 0.5rem; font-weight: 500;
+    }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      background: var(--foam);
+      border: 1px solid var(--mist);
+      border-bottom: 2px solid var(--mist);
+      padding: 0.8rem 1rem;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+      color: var(--espresso);
+      outline: none;
+      transition: border-color 0.25s, background 0.25s;
+      border-radius: 2px;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      border-color: var(--gold);
+      border-bottom-color: var(--gold);
+      background: white;
+    }
+    .form-group textarea { resize: vertical; min-height: 85px; }
+
+    .cart-panel {
+      background: var(--espresso);
+      padding: 2.2rem;
+      height: fit-content;
+      position: sticky; top: 90px;
+      border-radius: 4px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    }
+    .cart-panel h3 {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold); font-size: 1.35rem; margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(212,168,90,0.2);
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .cart-items { min-height: 100px; }
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(245,240,232,0.07);
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .cart-item-name { color: rgba(245,240,232,0.85); font-size: 0.88rem; }
+    .cart-item-price { color: var(--gold); font-size: 0.88rem; flex-shrink: 0; }
+    .cart-item-remove {
+      color: rgba(245,240,232,0.25); cursor: pointer; font-size: 0.9rem;
+      margin-left: 0.8rem; transition: all 0.2s;
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+    }
+    .cart-item-remove:hover { color: #e07060; background: rgba(224,112,96,0.1); }
+    .cart-total {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 1.5rem; padding-top: 1.2rem;
+      border-top: 1px solid rgba(212,168,90,0.25);
+      color: rgba(245,240,232,0.8); font-size: 0.85rem;
+    }
+    .cart-total strong { color: var(--gold); font-size: 1.25rem; font-family: 'Playfair Display', serif; }
+    .empty-cart { color: rgba(245,240,232,0.3); font-size: 0.82rem; font-style: italic; padding: 1.5rem 0; }
+
+    #pay-btn {
+      width: 100%; margin-top: 1.5rem;
+      background: var(--gold); color: var(--espresso);
+      border: none; padding: 1.1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem; letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer; font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+      border-radius: 2px;
+      position: relative; overflow: hidden;
+    }
+    #pay-btn:not(:disabled):hover {
+      background: var(--gold-light);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(212,168,90,0.3);
+    }
+    #pay-btn:not(:disabled):active { transform: translateY(-1px) scale(0.98); }
+    #pay-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .menu-select-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .menu-select-item {
+      background: var(--foam); border: 1px solid var(--mist);
+      padding: 0.65rem 0.9rem; cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34,1.4,0.64,1);
+      display: flex; justify-content: space-between; align-items: center;
+      border-radius: 2px;
+    }
+    .menu-select-item:hover { border-color: var(--gold); background: rgba(212,168,90,0.06); transform: scale(1.02); }
+    .menu-select-item:active { transform: scale(0.97); }
+    .menu-select-item.selected {
+      border-color: var(--caramel); background: rgba(200,132,58,0.1);
+      transform: scale(1.02);
+    }
+    .menu-select-item .item-name { font-size: 0.83rem; color: var(--espresso); }
+    .menu-select-item .item-price { font-size: 0.78rem; color: var(--caramel); font-weight: 600; }
+
+    /* ─── CONTACT PAGE ─── */
+    .contact-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 70px);
+    }
+    .contact-info {
+      position: relative;
+      overflow: hidden;
+      padding: 8rem 5rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .contact-info-bg {
+      position: absolute; inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1453614512568-c4024d13c247?w=800&q=80&auto=format');
+      background-size: cover; background-position: center;
+      filter: brightness(0.18) saturate(1.2);
+    }
+    .contact-info-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(18,11,5,0.85), rgba(44,20,8,0.7));
+    }
+    .contact-info-inner { position: relative; }
+    .contact-info h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--cream); font-size: 2.8rem; margin-bottom: 1rem;
+      font-weight: 400; line-height: 1.15;
+    }
+    .contact-info h2 em { color: var(--gold); font-style: italic; }
+    .contact-info > .contact-info-inner > p { color: rgba(245,240,232,0.6); line-height: 1.85; margin-bottom: 3rem; font-size: 0.9rem; }
+    .contact-detail {
+      display: flex; gap: 1.2rem; align-items: flex-start;
+      margin-bottom: 1.8rem;
+    }
+    .contact-icon {
+      width: 44px; height: 44px; background: rgba(212,168,90,0.1);
+      border: 1px solid rgba(212,168,90,0.25);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 1.1rem; border-radius: 2px;
+    }
+    .contact-detail-label {
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.3rem;
+    }
+    .contact-detail-value { color: rgba(245,240,232,0.8); font-size: 0.9rem; line-height: 1.6; }
+    .whatsapp-btn {
+      display: inline-flex; align-items: center; gap: 1rem;
+      background: #25D366; color: white;
+      border: none; padding: 1rem 2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; letter-spacing: 0.06em;
+      cursor: pointer; margin-top: 2rem;
+      text-decoration: none; font-weight: 600;
+      transition: all 0.3s cubic-bezier(0.34,1.4,0.64,1);
+      border-radius: 2px;
+    }
+    .whatsapp-btn:hover { background: #20b557; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(37,211,102,0.3); }
+    .whatsapp-btn:active { transform: translateY(-1px) scale(0.98); }
+
+    .contact-form-wrap {
+      background: var(--foam);
+      padding: 8rem 5rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .contact-form-label {
+      font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase;
+      color: var(--caramel); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.8rem;
+    }
+    .contact-form-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--caramel); }
+    .contact-form-wrap h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem; margin-bottom: 0.5rem; color: var(--espresso); font-weight: 400;
+    }
+    .contact-form-wrap > p { color: #8a7a6a; margin-bottom: 2.5rem; font-size: 0.88rem; }
+    #contact-form .btn-primary { width: 100%; padding: 1.1rem; font-size: 0.8rem; }
+    .success-msg {
+      display: none;
+      background: rgba(37,211,102,0.08); border: 1px solid rgba(37,211,102,0.25);
+      color: #15803d; padding: 1rem; margin-top: 1rem; font-size: 0.85rem; border-radius: 2px;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--dark);
+      padding: 4rem 5rem;
+      border-top: 1px solid rgba(212,168,90,0.12);
+    }
+    .footer-inner {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 2.5rem;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      color: var(--gold); font-size: 1.6rem;
+    }
+    .footer-links {
+      display: flex; gap: 2.5rem; list-style: none;
+    }
+    .footer-links a {
+      color: rgba(245,240,232,0.35); font-size: 0.78rem;
+      text-decoration: none; letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+    .footer-bottom {
+      display: flex; justify-content: space-between;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(245,240,232,0.06);
+    }
+    .footer-bottom p { color: rgba(245,240,232,0.25); font-size: 0.78rem; }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 0.85; }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 900px) {
+      nav { padding: 0 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      .features-band { display: none; }
+      .about-strip, .order-grid, .contact-grid { grid-template-columns: 1fr; }
+      .about-strip { padding: 5rem 1.5rem 7rem; }
+      .about-badge { display: none; }
+      .about-img-float { display: none; }
+      .gallery-strip { grid-template-columns: 1fr 1fr; height: 300px; }
+      .menu-section, .order-section { padding: 3rem 1.5rem; }
+      .contact-info, .contact-form-wrap { padding: 5rem 1.5rem; }
+      .page-header { padding: 7rem 1.5rem 3.5rem; }
+      .menu-select-grid { grid-template-columns: 1fr; }
+      footer { padding: 2.5rem 1.5rem; }
+      .footer-inner { flex-direction: column; gap: 1.5rem; }
+      .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Custom cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Toast notification -->
+<div id="toast">
+  <span class="toast-icon">☕</span>
+  <span id="toast-text"><span class="toast-gold">1 item</span> added to your order!</span>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">Brûlé &amp; <span>Bloom</span></div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')">Home</a></li>
+    <li><a onclick="showPage('menu')">Menu</a></li>
+    <li><a onclick="showPage('order')">Order</a></li>
+    <li><a onclick="showPage('contact')">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HOME ══ -->
+<div id="home" class="page active">
+
+  <section id="hero">
+    <div class="hero-bg-img"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow"><span></span>Established 2019 · Artisan Roastery · Bengaluru<span></span></p>
+      <h1 class="hero-title">
+        Where Every <em>Sip</em>
+        <span class="line2">Tells a Story</span>
+      </h1>
+      <p class="hero-sub">Hand-crafted coffees. Single-origin beans. Soulful ambience.</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="showPage('menu')">Explore Menu</button>
+        <button class="btn-outline" onclick="showPage('order')">Order Now</button>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span class="hero-scroll-text">Scroll</span>
+    </div>
+  </section>
+
+  <!-- Features band -->
+  <div class="features-band">
+    <div class="feature-item"><span>🌱</span><span>Ethically Sourced</span></div>
+    <div class="feature-item"><span>🔥</span><span>In-House Roasted</span></div>
+    <div class="feature-item"><span>🌍</span><span>12+ Origins</span></div>
+    <div class="feature-item"><span>⭐</span><span>5-Star Rated</span></div>
+    <div class="feature-item"><span>☕</span><span>50K Cups Served</span></div>
+  </div>
+
+  <!-- About -->
+  <section class="about-strip">
+    <div class="about-text">
+      <p class="about-label">Our Story</p>
+      <h2>Crafted with <em>Passion</em>,<br/>Served with Purpose</h2>
+      <p>At Brûlé & Bloom, we believe coffee is more than a beverage — it's a ritual. Each cup we pour carries the story of farmers, roasters, and baristas who dedicate their craft to your morning.</p>
+      <p>Our beans are ethically sourced from single-origin farms across Ethiopia, Colombia, and Indonesia, roasted in-house to unlock their fullest expression.</p>
+      <div class="stats-row">
+        <div class="stat-item"><span class="stat-num">12+</span><span class="stat-label">Origins</span></div>
+        <div class="stat-item"><span class="stat-num">50K</span><span class="stat-label">Cups Served</span></div>
+        <div class="stat-item"><span class="stat-num">5★</span><span class="stat-label">Rating</span></div>
+        <div class="stat-item"><span class="stat-num">2019</span><span class="stat-label">Est.</span></div>
+      </div>
+    </div>
+    <div class="about-visual">
+      <img class="about-img-main"
+        src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80&auto=format&fit=crop"
+        alt="Barista crafting coffee" loading="lazy" />
+      <img class="about-img-float"
+        src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80&auto=format&fit=crop"
+        alt="Coffee beans" loading="lazy" />
+      <div class="about-badge">
+        <strong>5★</strong>
+        Rated<br/>Café
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery strip -->
+  <div class="gallery-strip">
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=700&q=80&auto=format&fit=crop" alt="Cafe interior" loading="lazy" />
+      <span class="gallery-item-label">Our Space</span>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&q=80&auto=format&fit=crop" alt="Latte art" loading="lazy" />
+      <span class="gallery-item-label">Latte Art</span>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=400&q=80&auto=format&fit=crop" alt="Coffee beans" loading="lazy" />
+      <span class="gallery-item-label">Single Origin</span>
+    </div>
+    <div class="gallery-item">
+      <img src="https://images.unsplash.com/photo-1534040385115-33dcb3acba5b?w=400&q=80&auto=format&fit=crop" alt="Cold brew" loading="lazy" />
+      <span class="gallery-item-label">Cold Brew</span>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">Brûlé &amp; Bloom</div>
+      <ul class="footer-links">
+        <li><a onclick="showPage('home')">Home</a></li>
+        <li><a onclick="showPage('menu')">Menu</a></li>
+        <li><a onclick="showPage('order')">Order</a></li>
+        <li><a onclick="showPage('contact')">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Brûlé & Bloom. All rights reserved.</p>
+      <p>12, Lavelle Road, Bengaluru, Karnataka 560001</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ MENU ══ -->
+<div id="menu" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <span class="page-header-tag">The Full Menu</span>
+      <h1>Our Menu</h1>
+      <p>Hover to discover the story behind each cup ✦</p>
+    </div>
+  </div>
+
+  <div class="menu-section">
+    <div class="menu-category-header">
+      <span class="menu-category-emoji">☕</span>
+      <h2 class="menu-category-title">Espresso Classics</h2>
+      <div class="menu-category-line"></div>
+    </div>
+    <div class="menu-grid" id="espresso-grid"></div>
+
+    <div class="menu-category-header">
+      <span class="menu-category-emoji">⬡</span>
+      <h2 class="menu-category-title">Pour Overs &amp; Filter</h2>
+      <div class="menu-category-line"></div>
+    </div>
+    <div class="menu-grid" id="pourover-grid"></div>
+
+    <div class="menu-category-header">
+      <span class="menu-category-emoji">🧊</span>
+      <h2 class="menu-category-title">Cold &amp; Specialty</h2>
+      <div class="menu-category-line"></div>
+    </div>
+    <div class="menu-grid" id="cold-grid"></div>
+
+    <div class="menu-category-header">
+      <span class="menu-category-emoji">🍵</span>
+      <h2 class="menu-category-title">Teas &amp; Others</h2>
+      <div class="menu-category-line"></div>
+    </div>
+    <div class="menu-grid" id="tea-grid"></div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">Brûlé &amp; Bloom</div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 Brûlé & Bloom. All rights reserved.</p></div>
+  </footer>
+</div>
+
+<!-- ══ ORDER ══ -->
+<div id="order" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <span class="page-header-tag">Place Your Order</span>
+      <h1>Order Ahead</h1>
+      <p>Pick your favourites · We'll have it ready fresh</p>
+    </div>
+  </div>
+
+  <div class="order-section">
+    <div class="order-grid">
+      <div class="order-form-wrap">
+        <h2>Your Details</h2>
+        <p>Fill in your info and select items below.</p>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="o-name" placeholder="e.g. Priya Sharma" />
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="o-phone" placeholder="+91 98765 43210" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="o-email" placeholder="priya@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Table / Pickup?</label>
+          <select id="o-type">
+            <option value="dine-in">Dine In</option>
+            <option value="takeaway">Takeaway</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Special Instructions</label>
+          <textarea id="o-notes" placeholder="e.g. extra shot, oat milk, less sugar..."></textarea>
+        </div>
+        <h3 style="font-family:'Playfair Display',serif; margin-bottom:1rem; font-size:1.05rem; font-weight:400; color:var(--bark);">Select Items</h3>
+        <div class="menu-select-grid" id="order-items-grid"></div>
+      </div>
+
+      <div class="cart-panel">
+        <h3>🛒 Your Order</h3>
+        <div class="cart-items" id="cart-items">
+          <p class="empty-cart">No items added yet.</p>
+        </div>
+        <div class="cart-total" id="cart-total" style="display:none">
+          <span>Total</span>
+          <strong id="cart-total-amt">₹0</strong>
+        </div>
+        <button id="pay-btn" onclick="initiatePayment()" disabled>Pay with Razorpay</button>
+        <p style="font-size:0.68rem; color:rgba(245,240,232,0.3); margin-top:0.8rem; text-align:center; letter-spacing:0.05em;">Secure payments powered by Razorpay</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner"><div class="footer-logo">Brûlé &amp; Bloom</div></div>
+    <div class="footer-bottom"><p>© 2025 Brûlé & Bloom. All rights reserved.</p></div>
+  </footer>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div id="contact" class="page">
+  <div class="contact-grid">
+    <div class="contact-info">
+      <div class="contact-info-bg"></div>
+      <div class="contact-info-overlay"></div>
+      <div class="contact-info-inner">
+        <h2>Come Visit <em>Us</em></h2>
+        <p>We'd love to welcome you. Whether you have a question, a suggestion, or just want to say hello — our door is always open.</p>
+        <div class="contact-detail">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-detail-label">Address</div>
+            <div class="contact-detail-value">12, Lavelle Road, Ashok Nagar<br/>Bengaluru, Karnataka 560001</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">🕐</div>
+          <div>
+            <div class="contact-detail-label">Hours</div>
+            <div class="contact-detail-value">Mon–Fri: 7:00 AM – 10:00 PM<br/>Sat–Sun: 8:00 AM – 11:00 PM</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">📞</div>
+          <div>
+            <div class="contact-detail-label">Phone</div>
+            <div class="contact-detail-value">+91 95252 82482</div>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-icon">✉️</div>
+          <div>
+            <div class="contact-detail-label">Email</div>
+            <div class="contact-detail-value">hello@bruleandbloom.in</div>
+          </div>
+        </div>
+        <a class="whatsapp-btn" href="https://wa.me/919525282482?text=Hi%20Br%C3%BCl%C3%A9%20%26%20Bloom!%20I%20have%20a%20query." target="_blank" rel="noopener">
+          <span style="font-size:1.3rem">💬</span>
+          Chat on WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <div class="contact-form-wrap">
+      <p class="contact-form-label">Get In Touch</p>
+      <h2>Send Us a Message</h2>
+      <p>We typically reply within 2 hours during business hours.</p>
+      <form id="contact-form" onsubmit="submitContact(event)">
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" required placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" required placeholder="your@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <select>
+            <option>General Inquiry</option>
+            <option>Order Issue</option>
+            <option>Feedback</option>
+            <option>Collaboration</option>
+            <option>Private Event Booking</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea required placeholder="Tell us what's on your mind..."></textarea>
+        </div>
+        <button type="submit" class="btn-primary">Send Message</button>
+        <div class="success-msg" id="contact-success">✓ Message sent! We'll get back to you soon.</div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+// ── CURSOR ─────────────────────────────────────────────────────
+const dot = document.getElementById('cursorDot');
+const ring = document.getElementById('cursorRing');
+let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX; mouseY = e.clientY;
+  dot.style.transform = `translate(${mouseX - 4}px, ${mouseY - 4}px)`;
+});
+function animateRing() {
+  ringX += (mouseX - ringX) * 0.12;
+  ringY += (mouseY - ringY) * 0.12;
+  ring.style.transform = `translate(${ringX - 16}px, ${ringY - 16}px)`;
+  requestAnimationFrame(animateRing);
+}
+animateRing();
+document.querySelectorAll('button, a, .menu-select-item, .coffee-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    ring.style.width = '48px'; ring.style.height = '48px';
+    ring.style.opacity = '0.6';
+    dot.style.transform += ' scale(1.5)';
+  });
+  el.addEventListener('mouseleave', () => {
+    ring.style.width = '32px'; ring.style.height = '32px';
+    ring.style.opacity = '1';
+  });
+});
+
+// ── DATA ──────────────────────────────────────────────────────
+const menuData = {
+  espresso: [
+    {
+      name: "Espresso Ristretto", price: 150, emoji: "☕",
+      tag: "Intense", origin: "Ethiopia · Yirgacheffe",
+      quote: "A tiny sip of thunder — the soul of coffee, undiluted.",
+      desc: "Ultra-concentrated 15ml shot. Dark fruit and cocoa notes with a syrupy body.",
+      img: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Flat White", price: 220, emoji: "🥛",
+      tag: "Silky", origin: "Colombia · Huila",
+      quote: "Silky as a morning secret, bold as a well-kept promise.",
+      desc: "Double ristretto with micro-foamed whole milk. Originated in New Zealand.",
+      img: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Cortado", price: 200, emoji: "🫗",
+      tag: "Balanced", origin: "Brazil · Cerrado",
+      quote: "Half espresso, half milk — perfectly in between.",
+      desc: "Spanish in origin — cuts the acidity of espresso with equal warm milk.",
+      img: "https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Cappuccino", price: 210, emoji: "☕",
+      tag: "Frothy", origin: "Italy · Napoli",
+      quote: "The foam is the poetry; the espresso is the truth.",
+      desc: "Equal parts espresso, steamed milk, and airy foam. Named after Capuchin monks.",
+      img: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Long Black", price: 190, emoji: "🖤",
+      tag: "Robust", origin: "Kenya · Kirinyaga",
+      quote: "Black as midnight, honest as dawn.",
+      desc: "Hot water topped with a double espresso — preserving the crema.",
+      img: "https://images.unsplash.com/photo-1502364271109-0a9a75a2a9df?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Latte", price: 230, emoji: "🤍",
+      tag: "Mellow", origin: "Guatemala · Antigua",
+      quote: "Comfort in a cup — gentle, warm, and never in a hurry.",
+      desc: "Silky steamed milk meets a double espresso. A global morning ritual.",
+      img: "https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?w=500&q=80&auto=format&fit=crop"
+    },
+  ],
+  pourover: [
+    {
+      name: "V60 Pour Over", price: 280, emoji: "⬡",
+      tag: "Floral", origin: "Ethiopia · Sidamo",
+      quote: "Pouring slowly is an act of devotion.",
+      desc: "Hario V60 manual brew. Jasmine, bergamot, and raspberry on the finish.",
+      img: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Chemex", price: 300, emoji: "🔬",
+      tag: "Clean", origin: "Panama · Boquete",
+      quote: "Clarity of mind begins with clarity of taste.",
+      desc: "The Chemex uses thick paper filters for an exceptionally clean, wine-like cup.",
+      img: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Aeropress", price: 260, emoji: "💨",
+      tag: "Versatile", origin: "Indonesia · Sumatra",
+      quote: "Pressure is a gift. Ask the diamond, ask the bean.",
+      desc: "Quick, forgiving. Sumatran earthy notes — dark chocolate, cedar, full body.",
+      img: "https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Cold Drip Tower", price: 340, emoji: "💧",
+      tag: "Slow-brewed", origin: "Japan · Kyoto",
+      quote: "Time is the finest ingredient of all.",
+      desc: "12-hour slow drip through ice. Extraordinary depth.",
+      img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80&auto=format&fit=crop"
+    },
+  ],
+  cold: [
+    {
+      name: "Nitro Cold Brew", price: 320, emoji: "🫧",
+      tag: "Creamy", origin: "Honduras · Marcala",
+      quote: "Cascading like midnight rain — no milk needed.",
+      desc: "24-hour cold brew infused with nitrogen. Pours like stout, tastes like velvet.",
+      img: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Dalgona Whip", price: 260, emoji: "🍦",
+      tag: "Trendy", origin: "South Korea · Seoul",
+      quote: "Whipped into clouds — a coffee that floats above the ordinary.",
+      desc: "Whipped instant coffee over iced milk. Sweet, frothy, iconic.",
+      img: "https://images.unsplash.com/photo-1622480916113-9000ac49b79d?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Cold Brew Tonic", price: 290, emoji: "🍋",
+      tag: "Refreshing", origin: "Rwanda · Nyungwe",
+      quote: "When coffee meets tonic, expect the unexpected.",
+      desc: "Cold brew over tonic water and ice. Bright, effervescent, a barista favourite.",
+      img: "https://images.unsplash.com/photo-1534040385115-33dcb3acba5b?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Mazagran", price: 240, emoji: "🍹",
+      tag: "Historic", origin: "Algeria · 1840s",
+      quote: "The original iced coffee — born in the desert.",
+      desc: "Cold brew with lemon juice and sugar. A colonial Algerian classic.",
+      img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500&q=80&auto=format&fit=crop"
+    },
+  ],
+  tea: [
+    {
+      name: "Kashmiri Kahwa", price: 180, emoji: "🌸",
+      tag: "Spiced", origin: "Kashmir · India",
+      quote: "A valley in a cup — saffron, cinnamon, and centuries of warmth.",
+      desc: "Kashmiri green tea with saffron, cinnamon, cardamom, and almonds.",
+      img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Matcha Latte", price: 270, emoji: "🍵",
+      tag: "Earthy", origin: "Japan · Uji",
+      quote: "Stillness has a flavour. It tastes like matcha.",
+      desc: "Ceremonial-grade Uji matcha whisked with oat milk.",
+      img: "https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?w=500&q=80&auto=format&fit=crop"
+    },
+    {
+      name: "Masala Chai", price: 120, emoji: "♨️",
+      tag: "Beloved", origin: "India · Assam",
+      quote: "You can't buy happiness, but you can buy chai.",
+      desc: "Assam CTC tea brewed with ginger, cardamom, clove, and cinnamon.",
+      img: "https://images.unsplash.com/photo-1561047029-3000c68339ca?w=500&q=80&auto=format&fit=crop"
+    },
+  ]
+};
+
+// ── RENDER MENU ──────────────────────────────────────────────
+function renderMenu() {
+  const grids = { espresso: 'espresso-grid', pourover: 'pourover-grid', cold: 'cold-grid', tea: 'tea-grid' };
+  Object.entries(grids).forEach(([cat, gridId]) => {
+    const grid = document.getElementById(gridId);
+    grid.innerHTML = '';
+    menuData[cat].forEach(item => {
+      grid.innerHTML += `
+      <div class="coffee-card" onclick="addToCartFromCard('${item.name}', ${item.price}, this)">
+        <div class="card-img" style="background-image:url('${item.img}')"></div>
+        <div class="card-overlay"></div>
+        <div class="card-emoji-decor">${item.emoji}</div>
+        <div class="card-content">
+          <span class="card-tag">${item.tag}</span>
+          <h3 class="card-title">${item.name}</h3>
+          <div class="card-origin">✦ ${item.origin}</div>
+          <div class="card-quote">"${item.quote}"</div>
+          <div class="card-desc">${item.desc}</div>
+          <div class="card-footer">
+            <span class="card-price">₹${item.price}</span>
+            <button class="card-add-btn" onclick="event.stopPropagation(); addToCartFromCard('${item.name}', ${item.price}, this.closest('.coffee-card'))">+ Add</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+}
+
+// ── RENDER ORDER ITEMS ────────────────────────────────────────
+function renderOrderItems() {
+  const grid = document.getElementById('order-items-grid');
+  grid.innerHTML = '';
+  const all = [...menuData.espresso, ...menuData.pourover, ...menuData.cold, ...menuData.tea];
+  all.forEach(item => {
+    grid.innerHTML += `
+    <div class="menu-select-item" onclick="addToCart('${item.name}', ${item.price}, this)">
+      <span class="item-name">${item.emoji} ${item.name}</span>
+      <span class="item-price">₹${item.price}</span>
+    </div>`;
+  });
+}
+
+// ── TOAST ────────────────────────────────────────────────────
+let toastTimer;
+function showToast(name) {
+  const toast = document.getElementById('toast');
+  const text = document.getElementById('toast-text');
+  text.innerHTML = `<span class="toast-gold">${name}</span> added to your order!`;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ── CART LOGIC ────────────────────────────────────────────────
+let cart = [];
+
+function addToCartFromCard(name, price, cardEl) {
+  cart.push({ name, price });
+  renderCart();
+  document.getElementById('pay-btn').disabled = false;
+  showToast(name);
+  // Button feedback
+  const btn = cardEl.querySelector('.card-add-btn');
+  if (btn) {
+    btn.classList.add('added');
+    btn.textContent = '✓ Added';
+    setTimeout(() => {
+      btn.classList.remove('added');
+      btn.textContent = '+ Add';
+    }, 1200);
+  }
+}
+
+function addToCart(name, price, el) {
+  cart.push({ name, price });
+  renderCart();
+  document.getElementById('pay-btn').disabled = false;
+  showToast(name);
+  if (el) {
+    el.classList.add('selected');
+    setTimeout(() => el.classList.remove('selected'), 500);
+  }
+}
+
+function removeFromCart(idx) {
+  cart.splice(idx, 1);
+  renderCart();
+  if (cart.length === 0) document.getElementById('pay-btn').disabled = true;
+}
+
+function renderCart() {
+  const container = document.getElementById('cart-items');
+  const totalDiv = document.getElementById('cart-total');
+  if (!cart.length) {
+    container.innerHTML = '<p class="empty-cart">No items added yet.</p>';
+    totalDiv.style.display = 'none';
+    return;
+  }
+  container.innerHTML = cart.map((item, i) => `
+    <div class="cart-item">
+      <span class="cart-item-name">${item.name}</span>
+      <span class="cart-item-price">₹${item.price}</span>
+      <span class="cart-item-remove" onclick="removeFromCart(${i})">✕</span>
+    </div>`).join('');
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  document.getElementById('cart-total-amt').textContent = `₹${total}`;
+  totalDiv.style.display = 'flex';
+}
+
+// ── RAZORPAY ──────────────────────────────────────────────────
+function initiatePayment() {
+  const name  = document.getElementById('o-name').value.trim() || 'Guest';
+  const phone = document.getElementById('o-phone').value.trim();
+  const email = document.getElementById('o-email').value.trim() || 'guest@brulebloom.in';
+  const total = cart.reduce((s, i) => s + i.price, 0);
+  if (!cart.length) { alert('Please add items to your order first.'); return; }
+  const options = {
+    key: 'rzp_test_SeHLdnvWeD0mfU',
+    amount: total * 100,
+    currency: 'INR',
+    name: 'Brûlé & Bloom',
+    description: cart.map(i => i.name).join(', '),
+    prefill: { name, email, contact: phone },
+    notes: {
+      order_type: document.getElementById('o-type').value,
+      special_instructions: document.getElementById('o-notes').value
+    },
+    theme: { color: '#d4a85a' },
+    handler: function(response) {
+      alert(`✅ Payment successful!\nPayment ID: ${response.razorpay_payment_id}\n\nThank you, ${name}! Your order is being prepared. ☕`);
+      cart = []; renderCart();
+      document.getElementById('pay-btn').disabled = true;
+    }
+  };
+  try {
+    const rzp = new Razorpay(options);
+    rzp.open();
+  } catch(e) {
+    alert('Order total: ₹' + total + '\n(Razorpay test mode — add your key to go live)');
+  }
+}
+
+// ── CONTACT FORM ──────────────────────────────────────────────
+function submitContact(e) {
+  e.preventDefault();
+  document.getElementById('contact-success').style.display = 'block';
+  e.target.reset();
+  setTimeout(() => document.getElementById('contact-success').style.display = 'none', 5000);
+}
+
+// ── PAGE NAVIGATION ───────────────────────────────────────────
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+renderMenu();
+renderOrderItems();
+</script>
+</body>
+</html>
